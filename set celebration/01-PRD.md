@@ -5,7 +5,7 @@
 | 状态 | Draft v0.2（解耦组合模型） |
 | 端 | 设备端（圆 466×466，主）+ 手机 App |
 | 三通道 | UI · 音效 · 人声 |
-| 相关 | [UI 设计](./02-UI-design.md) · [撒花代码](./03-confetti.c) · [语音](./04-voice-copy.md) · [原子模块](./05-atomic-module.md) · [交互原型](./prototype-celebration.html) |
+| 相关 | [UI 设计](./02-UI-design.md) · [定义代码](./celebration.h) · [撒花代码](./03-confetti.c) · [语音](./04-voice-copy.md) · [交互原型](./prototype-celebration.html) |
 
 ## 1. 目标
 用户每完成一组/一节课时，给一个**分级的小高潮**（UI+音效+人声），即时、有仪式感、一致又有惊喜、不打断心流。**所有完成都值得庆祝**（含未达标的"已记录"）。
@@ -49,8 +49,37 @@
 - **恒定层 L0（两端一致）**：荧光绿×黑、字标、撒花样式、声音签名、教练人声人格。
 - **组合层（惊喜）**：范围/状态词元、表现徽章、音效叠层、撒花强度、圆屏光环 vs 手机全屏。
 
-## 6. 独立原子模块（不拥有导航）
-庆祝界面是**自包含原子模块**：给定 config 就独立演完一次庆祝，**不决定去哪**——演完发 `onDone`，去向（休息/结课数据/退出）由当时业务逻辑决定。停留时长可由宿主 `dwellMs` 控制。详见 [`05-atomic-module.md`](./05-atomic-module.md)。
+## 6. 独立原子模块（契约）
+
+庆祝界面是**自包含的原子交互模块**：给定一份 config 就独立演完一次庆祝（三行 + 撒花 + 音效 + 预生成语音），**不拥有导航**——演完发 `onDone`，去哪儿（休息/结课数据/退出）由**当时业务逻辑**决定。C 接口定义见 [`celebration.h`](./celebration.h)。
+
+**原则**：自包含 · 不导航 · 可嵌入任意流程 · 只发 `onDone` 信号。
+
+**输入 config**
+```
+{ scope: set|action|course,   // ① 范围
+  state: logged|done,         // ② 状态
+  perf:  none|great|pb,       // ③ 表现
+  lang, form: round|phone,
+  dwellMs?,                   // 不传用档位默认(本组2000/PB2400/结课≥3000)
+  skippable? }                // 默认可点击跳过(最短停留~1200ms 兜底)
+```
+
+**输出**：`onDone()` —— 唯一出口，宿主在此决定下一步。
+
+**两种生命周期（择一，推荐 A）**
+- **A · 模块自计时**：`show(cfg)` → 演完 dwellMs → 自动 `onDone` → 宿主导航。
+- **B · 宿主接管**：`show(cfg)` 常驻 → 宿主择时 `dismiss()` → 再导航。
+
+**嵌入示例（模块中立，去向由业务定）**
+```
+// 组间：  show(cfgSet);    onDone = () => goRest();
+// 结课：  show(cfgCourse); onDone = () => goSummary();
+// 成就弹窗：show(cfgPB);   onDone = () => closeOverlay();
+```
+三处用**同一模块**，只是宿主在 `onDone` 里各自决定下一步——模块对去向一无所知。
+
+**好处**：解耦导航（业务怎么变模块不改）· 高复用 · 易测试（给不同 config 即可独立预览）。
 
 ## 7. 载体形态（两端）
 

@@ -11,7 +11,6 @@
 | [celebration.h](./celebration.h) | **定义代码**：原子模块接口（config/enum/show/onDone/dismiss） |
 | [03-confetti.c](./03-confetti.c) | **C 语言实现**：撒花粒子动画（嵌入式圆屏，无素材） |
 | [04-voice-copy.md](./04-voice-copy.md) | 语音预生成方案 + 短/长文案 |
-| [05-atomic-module.md](./05-atomic-module.md) | 独立原子模块契约（不拥有导航） |
 | [prototype-celebration.html](./prototype-celebration.html) | 交互原型（浏览器打开可玩）· [在线版](https://claude.ai/code/artifact/0d0071ab-6732-417a-8e30-41f06ea180fe) |
 
 ---
@@ -32,7 +31,7 @@
 ### Q4 · 独立原子模块（不拥有导航）
 - 庆祝界面是**自包含原子模块**：只负责把这一次庆祝演完（UI+撒花+音效+预生成语音）。
 - **不决定去向**：演完发 `onDone`，去哪儿（休息/结课数据/退出）由**当时业务逻辑**决定。
-- 停留时长可由宿主 `dwellMs` 控制或完全接管生命周期。详见 [`05-atomic-module.md`](./05-atomic-module.md)。
+- 停留时长可由宿主 `dwellMs` 控制或完全接管生命周期。契约见 [`01-PRD.md`](./01-PRD.md) §6 与 [`celebration.h`](./celebration.h)。
 
 ---
 > 完整总纲见仓库 [`docs/PRD-动作完成庆祝小高潮.md`](../docs/PRD-动作完成庆祝小高潮.md)。
