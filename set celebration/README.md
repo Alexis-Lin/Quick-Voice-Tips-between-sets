@@ -7,7 +7,8 @@
 |---|---|
 | [01-PRD.md](./01-PRD.md) | 产品需求：解耦组合模型、三通道规则、流程 |
 | [02-UI-design.md](./02-UI-design.md) | UI 设计规范（三行布局、双形态、多语言） |
-| [02-ui-mockup.svg](./02-ui-mockup.svg) | **UI 设计图**（圆屏/手机·多档位） |
+| [02-ui-mockup.svg](./02-ui-mockup.svg) | **UI 设计图**（圆屏/手机·总览板） |
+| [ui-states/](./ui-states) | **典型状态界面图**（8 张单屏：完成/很棒/新纪录/已记录/结课/满贯/EN/手机） |
 | [03-confetti.c](./03-confetti.c) | **C 语言实现**：撒花粒子动画（嵌入式圆屏，无素材） |
 | [04-voice-copy.md](./04-voice-copy.md) | 语音预生成方案 + 短/长文案 |
 | [05-atomic-module.md](./05-atomic-module.md) | 独立原子模块契约（不拥有导航） |

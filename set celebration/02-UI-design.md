@@ -47,6 +47,21 @@
 - 徽章：跳入（overshoot）。
 - 遵循 `prefers-reduced-motion`：减粒子、去弹跳。
 
+## 5bis. 典型状态界面图（[`ui-states/`](./ui-states)）
+
+| 文件 | 状态 | 说明 |
+|---|---|---|
+| [01-set-done.svg](./ui-states/01-set-done.svg) | 本组 · 已完成 | 最常用；音效 当当 |
+| [02-set-great.svg](./ui-states/02-set-great.svg) | 本组 · 已完成 · 很棒 | GREAT 徽章(neon)，视觉为主不叠音 |
+| [03-set-pb.svg](./ui-states/03-set-pb.svg) | 本组 · 已完成 · 新纪录 | PB：金徽章+金光环+叠层啪啪 |
+| [04-set-logged.svg](./ui-states/04-set-logged.svg) | 本组 · 已记录 | 未达标，仍撒花仍庆祝；咚咚(暖) |
+| [05-course-done.svg](./ui-states/05-course-done.svg) | 全部 · 已完成 | 结课；当当·和弦 |
+| [06-course-grand.svg](./ui-states/06-course-grand.svg) | 全部 · 已完成 · 新纪录 | 满贯：金光环+金花+啪啪 |
+| [07-en-set-pb.svg](./ui-states/07-en-set-pb.svg) | EN · Set/Complete/NEW PB | 多语言词元拼接 |
+| [08-phone-course-pb.svg](./ui-states/08-phone-course-pb.svg) | 手机 · 全部/已完成/新纪录 | 方屏形态 |
+
+> 均为纯代码 SVG，GitHub 可直接预览；配色/布局与 [`03-confetti.c`](./03-confetti.c) 及原型一致。
+
 ## 6. 通道时间线（示例）
 ```
 t0     撒花喷发 + 状态词入场 + 完成音效
