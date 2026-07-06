@@ -1,6 +1,6 @@
 # 02 · UI 设计
 
-> 设计图见 [`02-ui-mockup.svg`](./02-ui-mockup.svg)；可交互原型见 [`prototype-celebration.html`](./prototype-celebration.html)（浏览器打开，可切语言/范围/状态/表现/形态）。
+> 设计图见 [`02-ui-states.svg`](./02-ui-states.svg)（一张总图含全部典型状态）；可交互原型见 [`prototype-celebration.html`](./prototype-celebration.html)（可切语言/范围/状态/表现/形态）。
 
 ## 1. 视觉语言（恒定层 L0，两端一致）
 - **配色**：荧光绿 `#a3e635` × 纯黑 `#000`；金色 `#f5c451`（新纪录）；白/暗绿点缀。
@@ -47,20 +47,22 @@
 - 徽章：跳入（overshoot）。
 - 遵循 `prefers-reduced-motion`：减粒子、去弹跳。
 
-## 5bis. 典型状态界面图（[`ui-states/`](./ui-states)）
+## 5bis. 典型状态总图（[`02-ui-states.svg`](./02-ui-states.svg)）
 
-| 文件 | 状态 | 说明 |
-|---|---|---|
-| [01-set-done.svg](./ui-states/01-set-done.svg) | 本组 · 已完成 | 最常用；音效 当当 |
-| [02-set-great.svg](./ui-states/02-set-great.svg) | 本组 · 已完成 · 很棒 | GREAT 徽章(neon)，视觉为主不叠音 |
-| [03-set-pb.svg](./ui-states/03-set-pb.svg) | 本组 · 已完成 · 新纪录 | PB：金徽章+金光环+叠层啪啪 |
-| [04-set-logged.svg](./ui-states/04-set-logged.svg) | 本组 · 已记录 | 未达标，仍撒花仍庆祝；咚咚(暖) |
-| [05-course-done.svg](./ui-states/05-course-done.svg) | 全部 · 已完成 | 结课；当当·和弦 |
-| [06-course-grand.svg](./ui-states/06-course-grand.svg) | 全部 · 已完成 · 新纪录 | 满贯：金光环+金花+啪啪 |
-| [07-en-set-pb.svg](./ui-states/07-en-set-pb.svg) | EN · Set/Complete/NEW PB | 多语言词元拼接 |
-| [08-phone-course-pb.svg](./ui-states/08-phone-course-pb.svg) | 手机 · 全部/已完成/新纪录 | 方屏形态 |
+一张 SVG 汇总全部典型状态（可导入 Figma 编辑，每屏是独立 group）：
 
-> 均为纯代码 SVG，GitHub 可直接预览；配色/布局与 [`03-confetti.c`](./03-confetti.c) 及原型一致。
+| 状态 | 说明 |
+|---|---|
+| 本组 · 已完成 | 最常用；音效 当当 |
+| 本组 · 很棒 | GREAT 徽章(neon)，视觉为主不叠音 |
+| 本组 · 新纪录 | PB：金徽章+金光环+叠层啪啪 |
+| 本组 · 已记录 | 未达标，仍撒花仍庆祝；咚咚(暖) |
+| 全部 · 已完成 | 结课；当当·和弦 |
+| 全部 · 满贯 | 金光环+金花+啪啪 |
+| EN · Set/Complete/NEW PB | 多语言词元拼接 |
+| 手机 · 全部/已完成/新纪录 | 方屏形态 |
+
+> 纯代码 SVG，GitHub 可直接预览；配色/布局与 [`03-confetti.c`](./03-confetti.c) 及原型一致。
 
 ## 6. 通道时间线（示例）
 ```
