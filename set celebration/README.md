@@ -9,8 +9,8 @@
 | [02-UI-design.md](./02-UI-design.md) | UI 设计规范（三行布局、双形态、多语言） |
 | [02-ui-mockup.svg](./02-ui-mockup.svg) | **UI 设计图**（圆屏/手机·多档位） |
 | [03-confetti.c](./03-confetti.c) | **C 语言实现**：撒花粒子动画（嵌入式圆屏，无素材） |
-| [04-voice-copy.md](./04-voice-copy.md) | 语音预生成方案 + 文案 |
-| [05-dwell-transition.md](./05-dwell-transition.md) | 停留时长与跳转逻辑 |
+| [04-voice-copy.md](./04-voice-copy.md) | 语音预生成方案 + 短/长文案 |
+| [05-atomic-module.md](./05-atomic-module.md) | 独立原子模块契约（不拥有导航） |
 | [prototype-celebration.html](./prototype-celebration.html) | 交互原型（浏览器打开可玩） |
 
 ---
@@ -28,9 +28,10 @@
 - **贴合但不过度依赖**：只依赖**粗粒度完成桶**（范围×状态×表现，完成瞬间已知），**不把精确次数烧进语音**（次数交给 UI 呈现）。
 - **多样性**：每桶预生成 8~15 条较长文案，洗牌袋挑选防重复。详见 [`04-voice-copy.md`](./04-voice-copy.md)。
 
-### Q4 · 停留与跳转
-- 停留默认 **2s**（PB/结课更久或等点击；最短 1.2s、可点击跳过）。
-- 跳转按上下文：**中间组→休息 / 结课→课程数据页 / 主动退出→结束**。庆祝页只回调 `onDone`，由课程状态机路由。详见 [`05-dwell-transition.md`](./05-dwell-transition.md)。
+### Q4 · 独立原子模块（不拥有导航）
+- 庆祝界面是**自包含原子模块**：只负责把这一次庆祝演完（UI+撒花+音效+预生成语音）。
+- **不决定去向**：演完发 `onDone`，去哪儿（休息/结课数据/退出）由**当时业务逻辑**决定。
+- 停留时长可由宿主 `dwellMs` 控制或完全接管生命周期。详见 [`05-atomic-module.md`](./05-atomic-module.md)。
 
 ---
 > 完整总纲见仓库 [`docs/PRD-动作完成庆祝小高潮.md`](../docs/PRD-动作完成庆祝小高潮.md)。
