@@ -1,5 +1,9 @@
 # PRD · 动作完成庆祝的小高潮（Completion Celebration）
 
+> ⚠️ **本文为早期草案（含 T0–T4 分档旧模型）。功能的最新权威版本已迁至独立文件夹
+> [`set celebration/`](../set%20celebration/)** —— 采用**解耦组合模型**（①范围×②状态×③表现）、
+> 原子模块契约、三行 UI、C 实现与交互原型。请以 `set celebration/` 为准；本文保留作演进记录。
+
 | 项 | 内容 |
 |---|---|
 | 文档状态 | Draft v0.1 |

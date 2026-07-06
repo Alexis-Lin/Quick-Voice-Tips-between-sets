@@ -9,10 +9,11 @@
 | [02-UI-design.md](./02-UI-design.md) | UI 设计规范（三行布局、双形态、多语言） |
 | [02-ui-mockup.svg](./02-ui-mockup.svg) | **UI 设计图**（圆屏/手机·总览板） |
 | [ui-states/](./ui-states) | **典型状态界面图**（8 张单屏：完成/很棒/新纪录/已记录/结课/满贯/EN/手机） |
+| [celebration.h](./celebration.h) | **定义代码**：原子模块接口（config/enum/show/onDone/dismiss） |
 | [03-confetti.c](./03-confetti.c) | **C 语言实现**：撒花粒子动画（嵌入式圆屏，无素材） |
 | [04-voice-copy.md](./04-voice-copy.md) | 语音预生成方案 + 短/长文案 |
 | [05-atomic-module.md](./05-atomic-module.md) | 独立原子模块契约（不拥有导航） |
-| [prototype-celebration.html](./prototype-celebration.html) | 交互原型（浏览器打开可玩） |
+| [prototype-celebration.html](./prototype-celebration.html) | 交互原型（浏览器打开可玩）· [在线版](https://claude.ai/code/artifact/0d0071ab-6732-417a-8e30-41f06ea180fe) |
 
 ---
 

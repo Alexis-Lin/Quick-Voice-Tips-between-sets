@@ -109,7 +109,7 @@ body{margin:0;background:var(--bg);color:var(--ink);
     </div>
 
     <div class="spec" id="spec"></div>
-    <p class="foot">解耦：文字/徽章/音效/人声/洒花各按维度独立取值再组合，<b>不穷举</b>。默认全部庆祝（含"已记录"）；新纪录只是多叠一层「啪啪」与金色。</p>
+    <p class="foot">解耦：文字/徽章/音效/人声/洒花各按维度独立取值再组合，<b>不穷举</b>。默认全部庆祝（含"已记录"）；新纪录只多叠一层「啪啪」与金色。<br>本界面是<b>独立原子模块</b>：只演完这一次庆祝，<b>不决定跳转</b>——演完由宿主业务接手。</p>
   </div>
 
   <div class="stage-col">
@@ -143,18 +143,18 @@ body{margin:0;background:var(--bg);color:var(--ink);
     en:{ scope:{set:"Set",action:"Exercise",course:"Course"}, state:{logged:"Logged",done:"Complete"},
          badge:{great:"GREAT",pb:"NEW PB"}, compose:(s,st)=>s+" "+st },
   };
-  // 人声（单独生成、不上屏）：按 状态×表现 粗分池
+  // 人声（预生成、不上屏）：节选自 04-voice-copy.md 的分组文案，按 状态×表现 粗分池
   const VOICE={
-    zh:{ ack:["这组先记下，喘口气~","记上了，休息一下再战。"],
-         done:["这组稳了，喘口气~","完成！放松一下肩膀。","节奏不错，继续保持。"],
-         great:["又稳又准，这组能打！","这组质量很高，动作标准！"],
-         pb:["破纪录啦！为你鼓掌。","新高度，超越了自己！"],
-         course:["全部完成，今天很棒！","练完啦，给自己鼓个掌。"] },
-    en:{ ack:["Logged — take a breath.","Noted. Rest a moment."],
-         done:["Set done — nice.","Complete, ease those shoulders."],
-         great:["Steady and precise — strong!","Clean form, great set!"],
-         pb:["New record — bravo!","New high, you beat yourself!"],
-         course:["All done, great work today!","Course complete — clap for yourself."] }
+    zh:{ ack:["这组先记下，调整呼吸下组再战。","没关系，稳住节奏，坚持就很棒。","尽力就好，喘口气我们继续。","先记一笔，慢慢来，别着急。"],
+         done:["这组稳稳拿下，节奏保持得很好。","完成！动作很到位，喘口气继续。","干得漂亮，这组质量在线，保持住。","又拿下一组，稳扎稳打，很好。","搞定这组，深呼吸，准备下一组。"],
+         great:["这组几乎组组到位，控制力很棒。","又稳又准，动作标准得像教科书。","质量很高，这组打得非常漂亮。","稳定又精准，这一组相当出色。"],
+         pb:["破纪录啦，你刚刚超越了自己！","新高度达成，这一组值得记住！","又刷新纪录了，今天状态在线！","超越自我，这份突破值得骄傲！"],
+         course:["全部完成，今天你坚持到底了！","练完啦，这份努力都算数，真棒。","整节课拿下，为你的坚持骄傲！","收工！从头到尾都很稳，鼓个掌。"] },
+    en:{ ack:["Logged — breathe and reset for the next one.","It's okay, hold your rhythm — keep at it.","Give what you can, breathe, let's continue.","Marked down — no rush, take your time."],
+         done:["Nice — that set was smooth and steady.","Done! Great form, take a breath.","Solid work, quality's on point — keep it up.","Another set down, steady as you go.","That's a wrap, breathe and reset."],
+         great:["Almost every rep on point — great control.","Steady and precise — textbook form.","High quality — that set was beautiful.","Steady and sharp — outstanding work."],
+         pb:["New record — you just beat yourself!","New high — worth remembering!","Another record broken, you're dialed in!","Beyond your limit — be proud of that!"],
+         course:["All done — you saw it through today!","Workout complete — every effort counts. Great job.","Whole session done — proud of your grit!","That's a wrap — steady throughout. Take a bow."] }
   };
 
   let lang="zh",scope="set",state="done",perf="none",mode="round",soundOn=true,voiceOn=true;
