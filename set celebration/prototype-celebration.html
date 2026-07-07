@@ -56,6 +56,7 @@ body{margin:0;background:var(--bg);color:var(--ink);
 .l-state{opacity:0;transform:scale(.7);font-weight:800;letter-spacing:-.02em;color:var(--neon);line-height:1.02;text-wrap:balance;text-shadow:0 0 28px rgba(163,230,53,.55)}
 .tap{position:absolute;left:0;right:0;text-align:center;font-size:12px;color:var(--muted);opacity:0;transition:opacity .3s}
 .ring{position:absolute;inset:6px;border-radius:50%;border:2px solid rgba(163,230,53,0);pointer-events:none}
+.flash{position:absolute;inset:0;background:radial-gradient(circle at 50% 45%, rgba(163,230,53,.55), rgba(163,230,53,0) 60%);opacity:0;pointer-events:none}
 .stage.round{width:min(466px,86vw);aspect-ratio:1;border-radius:50%;box-shadow:0 0 0 10px #0f120c,0 26px 70px rgba(0,0,0,.6)}
 .stage.round canvas{border-radius:50%}
 .stage.round .stagecontent{padding:0 13%;gap:7px}
@@ -117,6 +118,7 @@ body{margin:0;background:var(--bg);color:var(--ink);
       <div class="stage round" id="stage" data-playing="false">
         <div class="notch"></div>
         <canvas id="cv"></canvas>
+        <div class="flash" id="flash"></div>
         <div class="ring" id="ring"></div>
         <div class="idle">调左侧维度 → 点「组合并播放」</div>
         <div class="stagecontent">
@@ -178,6 +180,11 @@ body{margin:0;background:var(--bg);color:var(--ink);
   // 叠加层：新纪录 → 啪啪
   function pbLayer(){ clapLayer(0.15,0.5,0.5); clapLayer(0.38,0.6,0.45); [1568,2093].forEach((f,i)=>tone(f,0.2+i*0.08,0.4,{partials:[[1,1],[2,0.4]],gain:0.1})); }
   function playSfx(){ if(!soundOn)return; ensureAudio(); baseSfx(); if(perf==="pb")pbLayer(); }
+  // 蓄力上扬音（anticipation riser）：音高由低升高，落在爆发瞬间
+  function riser(dur){ ensureAudio(); const o=ac.createOscillator(),g=ac.createGain(),t0=ac.currentTime;
+    o.type="sine"; o.frequency.setValueAtTime(200,t0); o.frequency.exponentialRampToValueAtTime(640,t0+Math.max(0.08,dur));
+    g.gain.setValueAtTime(0.0001,t0); g.gain.exponentialRampToValueAtTime(0.09,t0+dur*0.9+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t0+dur+0.06);
+    o.connect(g); g.connect(master); o.start(t0); o.stop(t0+dur+0.1); }
   function speak(){ if(!voiceOn||!("speechSynthesis"in window))return; let pool;
     if(perf==="pb")pool=VOICE[lang].pb; else if(perf==="great")pool=VOICE[lang].great;
     else if(scope==="course")pool=VOICE[lang].course; else pool=(state==="logged")?VOICE[lang].ack:VOICE[lang].done;
@@ -185,50 +192,104 @@ body{margin:0;background:var(--bg);color:var(--ink);
     try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=(lang==="zh")?"zh-CN":"en-US";u.rate=1.05;u.pitch=1.05;const vs=speechSynthesis.getVoices(),v=vs.find(x=>x.lang&&x.lang.toLowerCase().startsWith(lang==="zh"?"zh":"en"));if(v)u.voice=v;speechSynthesis.speak(u);}catch(e){}
   }
 
-  // ---------- confetti ----------
+  // ---------- confetti（升级：飘摆翻转 + 多形状 + 分级调色 + 彩纸炮） ----------
   const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
-  let parts=[],raf=null,W=0,H=0;
-  function size(){const r=cv.getBoundingClientRect();W=cv.width=Math.max(1,r.width*devicePixelRatio);H=cv.height=Math.max(1,r.height*devicePixelRatio);}
+  let parts=[],raf=null,W=0,H=0;const DPR=devicePixelRatio||1;
+  function size(){const r=cv.getBoundingClientRect();W=cv.width=Math.max(1,r.width*DPR);H=cv.height=Math.max(1,r.height*DPR);}
   const Cc={neon:"#a3e635",white:"#f2f7ea",gold:"#f5c451",dim:"#6f9b26"};
-  function spawn(n,gold){if(reduce)n=Math.min(n,28);const spread=(mode==="round")?0.32:0.5;
-    for(let i=0;i<n;i++)parts.push({x:W*(0.5+(Math.random()-0.5)*spread),y:H*(mode==="round"?0.46:0.4),vx:(Math.random()-0.5)*10*devicePixelRatio,vy:(Math.random()*-12-4)*devicePixelRatio,g:0.34*devicePixelRatio,s:(3+Math.random()*4)*devicePixelRatio,rot:Math.random()*6.28,vr:(Math.random()-0.5)*0.4,c:gold&&Math.random()<0.45?Cc.gold:(Math.random()<0.5?Cc.neon:(Math.random()<0.5?Cc.white:Cc.dim)),life:1});
+  const FESTIVE=["#f2856b","#6bd6e6","#c98bdb"]; // 大场合点缀的低饱和多彩
+  const SHAPES=["rect","rect","circle","streamer","spark"];
+  // 分级调色板：普通=品牌色；很棒=更亮；PB=加金；结课/满贯=加多彩
+  function palette(){let p=[Cc.neon,Cc.white,Cc.dim];
+    if(perf==="great")p=[Cc.neon,Cc.white,Cc.neon,Cc.gold];
+    if(perf==="pb")p=[Cc.gold,Cc.neon,Cc.white,Cc.gold];
+    if(scope==="course")p=p.concat(FESTIVE.slice(0,(perf==="pb")?3:2));
+    return p;}
+  function mkPart(x,y,vx,vy,pal){return{x,y,vx,vy,g:0.30*DPR,drag:0.992,
+    s:(3.5+Math.random()*4)*DPR,rot:Math.random()*6.28,vr:(Math.random()-0.5)*0.5,
+    sp:Math.random()*6.28,sa:(0.6+Math.random()*1.4)*DPR,ss:0.13+Math.random()*0.18,
+    shape:SHAPES[(Math.random()*SHAPES.length)|0],c:pal[(Math.random()*pal.length)|0],
+    life:1,decay:0.006+Math.random()*0.004};}
+  function rain(n,pal){if(reduce)n=Math.min(n,20);const spread=(mode==="round")?0.62:0.92;
+    for(let i=0;i<n;i++)parts.push(mkPart(W*(0.5+(Math.random()-0.5)*spread),-10*DPR-Math.random()*H*0.15,(Math.random()-0.5)*3*DPR,(1+Math.random()*2.2)*DPR,pal));
     if(!raf)loop();}
+  function cannon(fx,n,pal){if(reduce)n=Math.min(n,14);const ox=W*fx,oy=H*1.02,dir=fx<0.5?1:-1;
+    for(let i=0;i<n;i++){const ang=-Math.PI/2+dir*(0.12+Math.random()*0.5),spd=(11+Math.random()*9)*DPR;
+      parts.push(mkPart(ox,oy,Math.cos(ang)*spd,Math.sin(ang)*spd,pal));}
+    if(!raf)loop();}
+  function burst(n,pal){if(reduce)n=Math.min(n,14);const cx=W*0.5,cy=H*(mode==="round"?0.46:0.42);
+    for(let i=0;i<n;i++){const ang=Math.random()*6.28,spd=(3+Math.random()*9)*DPR;
+      parts.push(mkPart(cx,cy,Math.cos(ang)*spd,Math.sin(ang)*spd-4*DPR,pal));}
+    if(!raf)loop();}
+  function drawShape(p){const s=p.s;
+    if(p.shape==="circle"){ctx.beginPath();ctx.arc(0,0,s*0.5,0,6.2832);ctx.fill();}
+    else if(p.shape==="streamer"){ctx.fillRect(-s*0.22,-s*1.4,s*0.44,s*2.8);}
+    else if(p.shape==="spark"){ctx.fillRect(-s*0.62,-s*0.12,s*1.24,s*0.24);ctx.fillRect(-s*0.12,-s*0.62,s*0.24,s*1.24);}
+    else ctx.fillRect(-s*0.5,-s*0.28,s,s*0.56);}
   function loop(){raf=requestAnimationFrame(loop);ctx.clearRect(0,0,W,H);
     if(mode==="round"){ctx.save();ctx.beginPath();ctx.arc(W/2,H/2,Math.min(W,H)/2,0,6.2832);ctx.clip();}
-    for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;p.life-=0.006;if(p.y>H+20||p.life<=0){parts.splice(i,1);continue;}ctx.save();ctx.globalAlpha=Math.max(0,Math.min(1,p.life));ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.c;ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.5);ctx.restore();}
+    for(let i=parts.length-1;i>=0;i--){const p=parts[i];
+      p.vy+=p.g;p.vx*=p.drag;p.sp+=p.ss;p.x+=p.vx+Math.sin(p.sp)*p.sa;p.y+=p.vy;p.rot+=p.vr;p.life-=p.decay;
+      if(p.y>H+24||p.life<=0){parts.splice(i,1);continue;}
+      ctx.save();ctx.globalAlpha=Math.max(0,Math.min(1,p.life*1.4));ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.c;drawShape(p);ctx.restore();}
     if(mode==="round")ctx.restore();
     if(!parts.length){cancelAnimationFrame(raf);raf=null;ctx.clearRect(0,0,W,H);}}
 
-  // ---------- compose & play ----------
-  const stage=document.getElementById("stage"),lineScope=document.getElementById("lineScope"),lineState=document.getElementById("lineState"),badge=document.getElementById("badge"),tap=document.getElementById("tap"),ring=document.getElementById("ring");
+  // ---------- compose & play（蓄力 → 爆发） ----------
+  const stage=document.getElementById("stage"),lineScope=document.getElementById("lineScope"),lineState=document.getElementById("lineState"),badge=document.getElementById("badge"),tap=document.getElementById("tap"),ring=document.getElementById("ring"),flash=document.getElementById("flash");
   let endTimer=null;
   function confettiCount(){let n=(scope==="set")?70:(scope==="action")?150:260; if(state==="logged")n*=0.7; if(perf==="great")n*=1.3; if(perf==="pb")n*=1.7; return Math.round(n);}
   function duration(){let d=(scope==="set")?1500:(scope==="action")?2000:3000; if(perf==="pb")d+=400; return d;}
   function isFull(){return scope==="course";}
+  // 分级：普通(本组·无表现)只柔和飘落；很棒/PB/结课 才有彩纸炮
+  function bursty(){return perf!=="none"||scope!=="set";}
+  function firePayload(){const pal=palette(),n=confettiCount();
+    rain(Math.round(n*0.5),pal);
+    if(bursty()){cannon(0.12,Math.round(n*0.5),pal);cannon(0.88,Math.round(n*0.5),pal);burst(Math.round(n*0.4),pal);}
+    else burst(Math.round(n*0.35),pal);
+    if(n>=200){setTimeout(()=>rain(Math.round(n*0.4),pal),700);setTimeout(()=>rain(Math.round(n*0.3),pal),1400);}}
   function play(){size();clearTimeout(endTimer);parts=[];if(raf){cancelAnimationFrame(raf);raf=null;}ctx.clearRect(0,0,W,H);
     stage.dataset.playing="true";
     const L=I18N[lang];const gold=(perf==="pb");
-    // 三行：D1 范围 / D2 状态(最大) / D3 表现徽章
     lineScope.textContent=L.scope[scope]; lineState.textContent=L.state[state];
-    lineScope.style.transition="none";lineState.style.transition="none";badge.style.transition="none";ring.style.transition="none";
+    // 复位
+    lineScope.style.transition="none";lineState.style.transition="none";badge.style.transition="none";ring.style.transition="none";flash.style.transition="none";flash.style.opacity=0;
     lineScope.style.opacity=0;lineScope.style.transform="translateY(8px)";
-    lineState.style.opacity=0;lineState.style.transform="scale(.7)";
+    lineState.style.opacity=0;lineState.style.transform="scale(.55)";
     badge.style.opacity=0;badge.style.transform="translateY(8px) scale(.9)";tap.style.opacity=0;
-    ring.style.borderColor="rgba(163,230,53,0)";ring.style.transform="scale(1.04)";
-    // 表现 → 独立徽章（第三行，不进主文字）
+    ring.style.borderColor="rgba(163,230,53,0)";ring.style.transform="scale(1.18)";
     if(perf==="none"){badge.style.display="none";} else {badge.style.display="block";badge.textContent=L.badge[perf];badge.className="badge"+(perf==="great"?" great":"");}
-    playSfx();
+    const ant=reduce?0:(bursty()?260:170);            // 蓄力时长（大场合更久）
+    // —— 蓄力：环收拢充能 + 状态词半隐放大 + 上扬音 ——
     requestAnimationFrame(()=>{
-      lineScope.style.transition="opacity .35s, transform .4s";lineScope.style.opacity=1;lineScope.style.transform="translateY(0)";
-      setTimeout(()=>{lineState.style.transition="opacity .4s, transform .5s cubic-bezier(.2,1.3,.4,1)";lineState.style.opacity=1;lineState.style.transform="scale(1)";},90);
-      if(mode==="round"){ring.style.transition="border-color .5s, transform .7s ease";ring.style.borderColor="rgba("+(gold?"245,196,81":"163,230,53")+","+(scope==="course"||gold?0.85:0.4)+")";ring.style.transform="scale(1)";}});
-    const n=confettiCount(); if(!(state==="logged"&&scope==="set"&&perf==="none")||true) spawn(n,gold); // 默认都洒花（含已记录，仍庆祝）
-    if(perf!=="none")setTimeout(()=>{badge.style.transition="opacity .3s, transform .4s cubic-bezier(.2,1.4,.4,1)";badge.style.opacity=1;badge.style.transform="translateY(0) scale(1)";},340);
-    setTimeout(()=>speak(),300);
-    if(n>=200){setTimeout(()=>spawn(Math.floor(n*0.5),gold),700);setTimeout(()=>spawn(Math.floor(n*0.4),gold),1400);}
-    if(isFull())setTimeout(()=>{tap.style.opacity=1;},900);
-    endTimer=setTimeout(()=>{stage.dataset.playing="false";ring.style.borderColor="rgba(163,230,53,0)";},duration()+400);
+      ring.style.transition="transform "+ant+"ms cubic-bezier(.4,0,.2,1), border-color "+ant+"ms";
+      ring.style.transform="scale(1.0)"; ring.style.borderColor="rgba("+(gold?"245,196,81":"163,230,53")+",.3)";
+      lineState.style.transition="opacity "+ant+"ms, transform "+ant+"ms cubic-bezier(.4,0,.2,1)";
+      lineState.style.opacity=0.35; lineState.style.transform="scale(.82)";
+    });
+    if(soundOn)riser(ant/1000);
+    // —— 爆发 ——
+    setTimeout(()=>burstMoment(gold),ant);
+    endTimer=setTimeout(()=>{stage.dataset.playing="false";ring.style.borderColor="rgba(163,230,53,0)";},ant+duration()+400);
     renderSpec();
+  }
+  function burstMoment(gold){
+    playSfx();                                          // 主撞击音
+    firePayload();                                      // 撒花（分级：彩纸炮+飘落）
+    // 状态词 overshoot 弹出
+    lineState.style.transition="opacity .16s, transform .52s cubic-bezier(.2,1.5,.35,1)";
+    lineState.style.opacity=1; lineState.style.transform="scale(1)";
+    lineScope.style.transition="opacity .35s, transform .4s"; lineScope.style.opacity=1; lineScope.style.transform="translateY(0)";
+    // 环闪亮
+    ring.style.transition="border-color .5s, transform .6s";
+    ring.style.borderColor="rgba("+(gold?"245,196,81":"163,230,53")+","+(scope==="course"||gold?0.9:0.5)+")";
+    // 屏幕闪光
+    flash.style.background="radial-gradient(circle at 50% 45%, "+(gold?"rgba(245,196,81,.6)":"rgba(163,230,53,.55)")+", rgba(0,0,0,0) 60%)";
+    flash.style.transition="none"; flash.style.opacity=(scope==="course"||gold)?0.7:0.5;
+    requestAnimationFrame(()=>{flash.style.transition="opacity .55s ease";flash.style.opacity=0;});
+    if(perf!=="none")setTimeout(()=>{badge.style.transition="opacity .3s, transform .4s cubic-bezier(.2,1.4,.4,1)";badge.style.opacity=1;badge.style.transform="translateY(0) scale(1)";},240);
+    setTimeout(()=>speak(),260);
+    if(isFull())setTimeout(()=>{tap.style.opacity=1;},900);
   }
 
   // ---------- controls ----------
